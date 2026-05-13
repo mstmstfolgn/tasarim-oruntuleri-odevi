@@ -27,37 +27,49 @@ UML Diyagramı Ne Anlatıyor?
 İkinci diyagramda ise araya UrunFactory giriyor. Böylece Program hangi ürünün nasıl 
 oluşturulduğunu bilmek zorunda kalmıyor.
 Bu da bağımlılığı azaltıyor ve sistemi daha esnek hale getiriyor.
-
-   classDiagram
+```mermaid
+classDiagram
     class Program {
         +Main()
     }
+
     class Urun {
         +string kategori
         +bool yasSiniriVarMi
     }
-    Program --> Urun : "doğrudan new Urun() ile yaratır"
 
-   classDiagram
+    Program --> Urun : "dogrudan new ile olusturur"
+```
+
+```mermaid
+classDiagram
+
     class Urun {
         <<abstract>>
         +VergiHesapla()
     }
+
     class Elektronik {
         +VergiHesapla()
     }
+
     class Kitap {
         +VergiHesapla()
     }
+
     class UrunFactory {
         +UrunOlustur() Urun
     }
+
     class Program {
         +Main()
     }
-    
+
     Urun <|-- Elektronik
     Urun <|-- Kitap
-    UrunFactory ..> Elektronik : "yaratır"
-    UrunFactory ..> Kitap : "yaratır"
-    Program --> UrunFactory : "kullanır"
+
+    UrunFactory ..> Elektronik : yaratir
+    UrunFactory ..> Kitap : yaratir
+
+    Program --> UrunFactory : kullanir
+```
