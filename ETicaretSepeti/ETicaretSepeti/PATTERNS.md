@@ -28,9 +28,7 @@ UML Diyagramı Ne Anlatıyor?
 oluşturulduğunu bilmek zorunda kalmıyor.
 Bu da bağımlılığı azaltıyor ve sistemi daha esnek hale getiriyor.
 
-**ÖNCEKİ HALİ (Sıkı Bağımlı):**
-```mermaid
-classDiagram
+   classDiagram
     class Program {
         +Main()
     }
@@ -38,12 +36,9 @@ classDiagram
         +string kategori
         +bool yasSiniriVarMi
     }
-    Program --> Urun : doğrudan new Urun() ile yaratır
+    Program --> Urun : "doğrudan new Urun() ile yaratır"
 
-
-    **SONRAKİ HALİ (Factory Method Uygulanmış)**
-
-    classDiagram
+   classDiagram
     class Urun {
         <<abstract>>
         +VergiHesapla()
@@ -63,6 +58,6 @@ classDiagram
     
     Urun <|-- Elektronik
     Urun <|-- Kitap
-    UrunFactory ..> Elektronik : yaratır
-    UrunFactory ..> Kitap : yaratır
-    Program --> UrunFactory : kullanır
+    UrunFactory ..> Elektronik : "yaratır"
+    UrunFactory ..> Kitap : "yaratır"
+    Program --> UrunFactory : "kullanır"
