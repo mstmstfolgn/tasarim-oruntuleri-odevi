@@ -1,0 +1,10 @@
+﻿################################################################################
+# Bu .gitignore dosyası Microsoft(R) Visual Studio tarafından otomatik olarak oluşturulmuştur.
+################################################################################
+
+/ETicaretSepeti/ETicaretSepeti/bin/Debug/net8.0
+/ETicaretSepeti/ETicaretSepeti/obj
+/ETicaretSepeti/.vs/ETicaretSepeti/FileContentIndex
+/ETicaretSepeti/.vs/ETicaretSepeti/v17
+/.vs
+/ETicaretSepeti/.vs/ETicaretSepeti
