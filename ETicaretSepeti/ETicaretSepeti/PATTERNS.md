@@ -1,4 +1,90 @@
+### 📊 Sistemin Genel Mimari Diyagramı (UML)
 
+```mermaid
+classDiagram
+    class ETicaretFacade {
+        +SiparisTamamla()
+    }
+    class Sepet {
+        -List urunler
+        +UrunEkle(IUrun)
+        +Hesapla(IIndirimStratejisi)
+    }
+    class IUrun {
+        <<interface>>
+        +GetFiyat()
+        +GetAd()
+    }
+    class IIndirimStratejisi {
+        <<interface>>
+        +IndirimUygula(fiyat)
+    }
+    class IBildirimGozlemci {
+        <<interface>>
+        +BilgiVer(mesaj)
+    }
+
+    ETicaretFacade --> Sepet : Yonetir
+    ETicaretFacade --> IBildirimGozlemci : Observer
+    Sepet --> IIndirimStratejisi : Strategy
+    Sepet --> IUrun : Icerir
+    IUrun <|-- UrunDecorator : Decorator
+    IUrun <|-- ElektronikUrun : Factory Method
+```
+
+
+### 1.Creational Pattern: Factory Method (Faz 1)
+Nerede Kullanıldı?
+Projede UrunFactory isminde bir fabrika sınıfı oluşturuldu. Eskiden ürünler Main içinde direkt new Elektronik(), new Kitap() şeklinde oluşturuluyordu. Şimdi ise ürün oluşturma işlemleri UrunFactory üzerinden yapılıyor.
+
+Neden Kullanıldı?
+Eski yapıda yeni bir ürün eklemek istediğimizde ana kodun içine girip değişiklik yapmak gerekiyordu. Bu durum kodun karışmasına ve bağımlılığın artmasına neden oluyordu. Factory Method kullanılarak nesne oluşturma işi tek bir yerde toplandı. Böylece kod daha düzenli ve yönetilebilir hale geldi.
+Ne Kazanıldı? -Kodun okunabilirliği arttı. -Ürün oluşturma işlemleri merkezi hale geldi. -Yeni ürün eklemek kolaylaştı. -Main metodu gereksiz nesne oluşturma yükünden kurtuldu. -OCP prensibine daha uygun bir yapı oluştu.
+
+UML Diyagramı Ne Anlatıyor?
+İlk diyagramda Program sınıfı ürünleri doğrudan kendi oluşturuyor. Yani sistem sıkı bağlı çalışıyor. İkinci diyagramda ise araya UrunFactory giriyor. Böylece Program hangi ürünün nasıl oluşturulduğunu bilmek zorunda kalmıyor. Bu da bağımlılığı azaltıyor ve sistemi daha esnek hale getiriyor.,
+
+```mermaid
+classDiagram
+    class Program {
+        +Main()
+    }
+    class ElektronikUrun {
+        +GetFiyat()
+    }
+    class KitapUrun {
+        +GetFiyat()
+    }
+    
+    note for Program "Sıkı Bağlılık: Her ürün için\ndirekt 'new' kullanılıyor."
+    Program ..> ElektronikUrun : new ElektronikUrun()
+    Program ..> KitapUrun : new KitapUrun()
+```
+## 2. uml
+```mermaid
+classDiagram
+    class Program {
+        +Main()
+    }
+    class UrunFactory {
+        +IUrun CreateUrun(string tip)
+    }
+    class IUrun {
+        <<interface>>
+        +GetFiyat()
+    }
+    class ElektronikUrun {
+        +GetFiyat()
+    }
+    class KitapUrun {
+        +GetFiyat()
+    }
+
+    Program ..> UrunFactory : Ürün İste
+    UrunFactory ..> IUrun : Nesne Üret (Factory Method)
+    IUrun <|-- ElektronikUrun : Uygular (Implements)
+    IUrun <|-- KitapUrun : Uygular (Implements)
+```
 
 ﻿## 2. Structural Patterns (Faz 2)
 
@@ -44,67 +130,119 @@ gizlemek ve basitleştirmek için tek bir giriş noktası oluşturduk.
 
 ### 📊 Faz 2 Mimari UML Diyagramı
 
-
-
-
-﻿Tasarım Örüntüleri Dokümantasyonu
-1. Creational Pattern: Factory Method (Faz 1)
-
-Nerede Kullanıldı?
-
-Projede UrunFactory isminde bir fabrika sınıfı oluşturuldu.
-Eskiden ürünler Main içinde direkt new Elektronik(), new Kitap() şeklinde oluşturuluyordu.
-Şimdi ise ürün oluşturma işlemleri UrunFactory üzerinden yapılıyor.
-
-Neden Kullanıldı?
-
-Eski yapıda yeni bir ürün eklemek istediğimizde ana kodun içine girip değişiklik yapmak gerekiyordu.
-Bu durum kodun karışmasına ve bağımlılığın artmasına neden oluyordu.
-Factory Method kullanılarak nesne oluşturma işi tek bir yerde toplandı. 
-Böylece kod daha düzenli ve yönetilebilir hale geldi.
-
-Ne Kazanıldı?
--Kodun okunabilirliği arttı.
--Ürün oluşturma işlemleri merkezi hale geldi.
--Yeni ürün eklemek kolaylaştı.
--Main metodu gereksiz nesne oluşturma yükünden kurtuldu.
--OCP prensibine daha uygun bir yapı oluştu.
-
-UML Diyagramı Ne Anlatıyor?
-
-İlk diyagramda Program sınıfı ürünleri doğrudan kendi oluşturuyor. Yani sistem sıkı bağlı çalışıyor.
-İkinci diyagramda ise araya UrunFactory giriyor. Böylece Program hangi ürünün nasıl 
-oluşturulduğunu bilmek zorunda kalmıyor.
-Bu da bağımlılığı azaltıyor ve sistemi daha esnek hale getiriyor.
-### 📊 Sistemin Genel Mimari Diyagramı (UML)
-
 ```mermaid
 classDiagram
     class ETicaretFacade {
-        +SiparisTamamla()
+        -Sepet _sepet
+        -IKargoServisi _kargo
+        +SiparisHazirla()
     }
-    class Sepet {
-        -List urunler
-        +UrunEkle(IUrun)
-        +Hesapla(IIndirimStratejisi)
-    }
+
     class IUrun {
         <<interface>>
-        +GetFiyat()
-        +GetAd()
+        +GetFiyat() double
+        +GetAd() string
+    }
+
+    class UrunDecorator {
+        <<abstract>>
+        -IUrun _urun
+        +GetFiyat() double
+    }
+
+    class HediyePaketiDecorator {
+        +GetFiyat() double
+    }
+
+    class IKargoServisi {
+        <<interface>>
+        +KargoGonder()
+    }
+
+    class ArasKargoAdapter {
+        -ArasKargoSistemi _disSistem
+        +KargoGonder()
+    }
+
+    %% İlişkiler
+    ETicaretFacade --> IUrun : Ürünleri Yönetir
+    ETicaretFacade --> IKargoServisi : Kargo Servisini Tetikler
+    
+    IUrun <|-- UrunDecorator : Kalıtım
+    UrunDecorator o-- IUrun : Mevcut Ürünü Sarmalar (Decorator)
+    UrunDecorator <|-- HediyePaketiDecorator : Yeni Özellik Ekler
+    
+    IKargoServisi <|-- ArasKargoAdapter : Arayüzü Uyarlar (Adapter)
+
+```
+
+﻿
+
+## 3. Behavioral Patterns (Faz 3)
+
+A. Strategy Pattern
+Nerede Kullanıldı?
+`Sepet` sınıfında indirim hesaplamaları için `IIndirimStratejisi` 
+arayüzü ve türevleri (`VipIndirimStratejisi`, `OgrenciIndirimStratejisi` vb.) kullanıldı.
+
+Neden Kullanıldı?
+Önceden indirim mantıkları if-else bloklarıyla `Sepet` sınıfının 
+içine gömülüydü. Yeni bir indirim eklemek kodun bozulmasına ve OCP'nin ihlaline yol açardı. 
+İndirim algoritmalarını sınıflara bölerek bu karmaşayı temizledik.
+
+Ne Kazanıldı?
+OCP (Açık/Kapalı Prensibi) %100 sağlandı. Yeni bir indirim türü 
+(Örn: Efsane Cuma) eklemek için mevcut koda hiç dokunmadan sadece yeni bir 
+strateji sınıfı oluşturmamız yeterli olacak.
+
+B. Observer Pattern
+Nerede Kullanıldı?
+`ETicaretFacade` sınıfında sipariş bitiminde müşteriye bildirim 
+göndermek için `IBildirimGozlemcisi` arayüzü ile kullanıldı.
+
+Neden Kullanıldı?
+Sipariş tamamlanınca Email ve SMS servislerini koda sıkı sıkıya 
+bağlamak (tight coupling) yerine, esnek bir "yayıncı-abone" (publisher/subscriber) 
+sistemi kurmak istedik.
+
+Ne Kazanıldı?
+Sisteme yeni bir bildirim yöntemi (Örn: WhatsApp bildirimi) 
+eklemek istediğimizde sipariş veya sepet kodunu değiştirmemize gerek kalmadı. 
+Sadece yeni bir gözlemci ekleyip sisteme abone ediyoruz.
+
+---
+
+```mermaid
+classDiagram
+    class Sepet {
+        -IIndirimStratejisi _indirimStratejisi
+        +ToplamHesapla()
+        +IndirimStratejisiBelirle()
     }
     class IIndirimStratejisi {
         <<interface>>
-        +IndirimUygula(fiyat)
+        +IndirimUygula()
     }
-    class IBildirimGozlemci {
-        <<interface>>
-        +BilgiVer(mesaj)
-    }
+    class VipIndirimStratejisi
+    class OgrenciIndirimStratejisi
+    
+    Sepet o-- IIndirimStratejisi : "kullanir"
+    IIndirimStratejisi <|.. VipIndirimStratejisi
+    IIndirimStratejisi <|.. OgrenciIndirimStratejisi
 
-    ETicaretFacade --> Sepet : Yonetir
-    ETicaretFacade --> IBildirimGozlemci : Observer
-    Sepet --> IIndirimStratejisi : Strategy
-    Sepet --> IUrun : Icerir
-    IUrun <|-- UrunDecorator : Decorator
-    IUrun <|-- ElektronikUrun : Factory Method```
+    class ETicaretFacade {
+        -List~IBildirimGozlemcisi~ _gozlemciler
+        +SiparisOlustur()
+        +GozlemciEkle()
+    }
+    class IBildirimGozlemcisi {
+        <<interface>>
+        +BildirimAl()
+    }
+    class EmailBildirim
+    class SmsBildirim
+    
+    ETicaretFacade o-- IBildirimGozlemcisi : "haberdar eder"
+    IBildirimGozlemcisi <|.. EmailBildirim
+    IBildirimGozlemcisi <|.. SmsBildirim
+```
