@@ -43,119 +43,35 @@ gizlemek ve basitleştirmek için tek bir giriş noktası oluşturduk.
 
 ### 📊 Faz 2 Mimari UML Diyagramı
 
-```mermaid
-classDiagram
-=======
-﻿Tasarım Örüntüleri Dokümantasyonu
-1. Creational Pattern: Factory Method (Faz 1)
-
-Nerede Kullanıldı?
-
-Projede UrunFactory isminde bir fabrika sınıfı oluşturuldu.
-Eskiden ürünler Main içinde direkt new Elektronik(), new Kitap() şeklinde oluşturuluyordu.
-Şimdi ise ürün oluşturma işlemleri UrunFactory üzerinden yapılıyor.
-
-Neden Kullanıldı?
-
-Eski yapıda yeni bir ürün eklemek istediğimizde ana kodun içine girip değişiklik yapmak gerekiyordu.
-Bu durum kodun karışmasına ve bağımlılığın artmasına neden oluyordu.
-Factory Method kullanılarak nesne oluşturma işi tek bir yerde toplandı. 
-Böylece kod daha düzenli ve yönetilebilir hale geldi.
-
-Ne Kazanıldı?
--Kodun okunabilirliği arttı.
--Ürün oluşturma işlemleri merkezi hale geldi.
--Yeni ürün eklemek kolaylaştı.
--Main metodu gereksiz nesne oluşturma yükünden kurtuldu.
--OCP prensibine daha uygun bir yapı oluştu.
-
-UML Diyagramı Ne Anlatıyor?
-
-İlk diyagramda Program sınıfı ürünleri doğrudan kendi oluşturuyor. Yani sistem sıkı bağlı çalışıyor.
-İkinci diyagramda ise araya UrunFactory giriyor. Böylece Program hangi ürünün nasıl 
-oluşturulduğunu bilmek zorunda kalmıyor.
-Bu da bağımlılığı azaltıyor ve sistemi daha esnek hale getiriyor.
-```mermaid
-classDiagram
-    class Program {
-        +Main()
-    }
-
-    class Urun {
-        +string kategori
-        +bool yasSiniriVarMi
-    }
-
-    Program --> Urun : "dogrudan new ile olusturur"
-```
+### 📊 Sistemin Genel Mimari Diyagramı (UML)
 
 ```mermaid
 classDiagram
-
-
-    class Urun {
-        <<abstract>>
-        +VergiHesapla()
-    }
-
-    class UrunDecorator {
-        <<abstract>>
-        #Urun _urun
-    }
-    class HediyePaketiDecorator
-    class EkstraSigortaDecorator
-    
-    Urun <|-- UrunDecorator
-    Urun <-- UrunDecorator : "sarmalar"
-    UrunDecorator <|-- HediyePaketiDecorator
-    UrunDecorator <|-- EkstraSigortaDecorator
-
-    class IKargoServisi {
-        <<interface>>
-        +Deliver()
-    }
-    class ArasKargoAdapter
-    class ArasKargoSistemi {
-        +KargoGonder()
-    }
-    
-    IKargoServisi <|.. ArasKargoAdapter
-    ArasKargoAdapter --> ArasKargoSistemi : "uyarlar"
-
     class ETicaretFacade {
-        +SiparisOlustur()
+        +SiparisTamamla()
     }
     class Sepet {
-        +ToplamHesapla()
+        -List urunler
+        +UrunEkle(IUrun)
+        +Hesapla(IIndirimStratejisi)
     }
-    
-    ETicaretFacade --> Sepet : "yonetir"
-    ETicaretFacade --> IKargoServisi : "kullanir"
-    ETicaretFacade ..> UrunDecorator : "yaratir"
-=======
-
-    class Elektronik {
-        +VergiHesapla()
+    class IUrun {
+        <<interface>>
+        +GetFiyat()
+        +GetAd()
     }
-
-    class Kitap {
-        +VergiHesapla()
+    class IIndirimStratejisi {
+        <<interface>>
+        +IndirimUygula(fiyat)
     }
-
-    class UrunFactory {
-        +UrunOlustur() Urun
+    class IBildirimGozlemci {
+        <<interface>>
+        +BilgiVer(mesaj)
     }
 
-    class Program {
-        +Main()
-    }
-
-    Urun <|-- Elektronik
-    Urun <|-- Kitap
-
-    UrunFactory ..> Elektronik : yaratir
-    UrunFactory ..> Kitap : yaratir
-
-    Program --> UrunFactory : kullanir
-```
-
+    ETicaretFacade --> Sepet : Yonetir
+    ETicaretFacade --> IBildirimGozlemci : Observer
+    Sepet --> IIndirimStratejisi : Strategy```
+    Sepet --> IUrun : Icerir
+    IUrun <|-- UrunDecorator : Decorator
+    IUrun <|-- ElektronikUrun : Factory Method
