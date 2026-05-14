@@ -20,7 +20,6 @@ namespace ETicaretSepeti
     public class Elektronik : Urun
     {
         public override string kategori => "Elektronik";
-
         public override bool yasSiniriVarMi => false;
 
         public override decimal VergiHesapla()
@@ -32,7 +31,6 @@ namespace ETicaretSepeti
     public class Kitap : Urun
     {
         public override string kategori => "Kitap";
-
         public override bool yasSiniriVarMi => false;
 
         public override decimal VergiHesapla()
@@ -44,7 +42,6 @@ namespace ETicaretSepeti
     public class Yiyecek : Urun
     {
         public override string kategori => "Yiyecek";
-
         public override bool yasSiniriVarMi => true;
 
         public override decimal VergiHesapla()
@@ -56,12 +53,87 @@ namespace ETicaretSepeti
     public class Motorsiklet : Urun
     {
         public override string kategori => "Motorsiklet";
-
         public override bool yasSiniriVarMi => false;
 
         public override decimal VergiHesapla()
         {
             return 0.18m;
+        }
+    }
+
+    public abstract class UrunDecorator : Urun
+    {
+        protected Urun _urun;
+
+        public UrunDecorator(Urun urun)
+        {
+            _urun = urun;
+
+            urunAdi = urun.urunAdi;
+            fiyat = urun.fiyat;
+            stokAdedi = urun.stokAdedi;
+            agirlik = urun.agirlik;
+            paraBirimi = urun.paraBirimi;
+        }
+
+        public override string kategori => _urun.kategori;
+
+        public override bool yasSiniriVarMi => _urun.yasSiniriVarMi;
+    }
+
+    public class HediyePaketiDecorator : UrunDecorator
+    {
+        public HediyePaketiDecorator(Urun urun) : base(urun)
+        {
+            urunAdi = urun.urunAdi + " [Hediye Paketli]";
+        }
+
+        public override decimal VergiHesapla()
+        {
+            return _urun.VergiHesapla() + 0.02m;
+        }
+    }
+
+    public class EkstraSigortaDecorator : UrunDecorator
+    {
+        public EkstraSigortaDecorator(Urun urun) : base(urun)
+        {
+            urunAdi = urun.urunAdi + " (Ekstra Sigortalı)";
+        }
+
+        public override decimal VergiHesapla()
+        {
+            return _urun.VergiHesapla() + 0.05m;
+        }
+    }
+
+    public interface IKargoServisi
+    {
+        void TeslimEt(string musteriAdi, string adres);
+    }
+
+    public class ArasKargoSistemi
+    {
+        public void KargoGonder(string tamAdres)
+        {
+            Console.WriteLine("Aras Kargo -> " + tamAdres + " adresine gönderildi.");
+        }
+    }
+
+    public class ArasKargoAdapter : IKargoServisi
+    {
+        private ArasKargoSistemi _arasKargo;
+
+        public ArasKargoAdapter()
+        {
+            _arasKargo = new ArasKargoSistemi();
+        }
+
+        public void TeslimEt(string musteriAdi, string adres)
+        {
+            string formatliAdres = musteriAdi + " - " + adres;
+
+            _arasKargo.KargoGonder(formatliAdres);
         }
     }
 
@@ -127,8 +199,6 @@ namespace ETicaretSepeti
 
         public string hedefParaBirimi { get; set; } = "TRY";
 
-        public bool hediyePaketi { get; set; }
-
         public void UrunEkle(Urun urun)
         {
             if (urun.stokAdedi <= 0)
@@ -192,11 +262,11 @@ namespace ETicaretSepeti
 
             if (musteriTipi == "Student")
             {
-                toplam = toplam * 0.90m;
+                toplam *= 0.90m;
             }
             else if (musteriTipi == "VIP")
             {
-                toplam = toplam * 0.80m;
+                toplam *= 0.80m;
             }
 
             if (kuponKodu == "YAZ2026")
@@ -218,11 +288,6 @@ namespace ETicaretSepeti
 
             toplam += kargo;
 
-            if (hediyePaketi)
-            {
-                toplam += 25;
-            }
-
             if (odemeTuru == "CreditCard")
             {
                 toplam += toplam * 0.02m;
@@ -239,42 +304,69 @@ namespace ETicaretSepeti
         }
     }
 
+    public class ETicaretFacade
+    {
+        private Sepet _sepet;
+        private IKargoServisi _kargoServisi;
+
+        public ETicaretFacade()
+        {
+            _sepet = new Sepet();
+            _kargoServisi = new ArasKargoAdapter();
+
+            _sepet.musteriTipi = "VIP";
+            _sepet.kurumsalMi = false;
+            _sepet.musteriYasi = 22;
+            _sepet.kuponKodu = "YAZ2026";
+            _sepet.odemeTuru = "CreditCard";
+        }
+
+        public void SiparisOlustur()
+        {
+            Urun laptop = UrunFactory.UrunOlustur(
+                "elektronik",
+                "RTX 4050 Laptop",
+                1200,
+                "USD",
+                3,
+                2.5m
+            );
+
+            laptop = new EkstraSigortaDecorator(laptop);
+
+            _sepet.UrunEkle(laptop);
+
+            Urun kitap = UrunFactory.UrunOlustur(
+                "kitap",
+                "Linux Kitabi",
+                250,
+                "TRY",
+                5,
+                1
+            );
+
+            kitap = new HediyePaketiDecorator(kitap);
+
+            _sepet.UrunEkle(kitap);
+
+            decimal toplam = _sepet.ToplamHesapla();
+
+            Console.WriteLine("\nToplam fiyat: " + Math.Round(toplam, 2));
+
+            _kargoServisi.TeslimEt(
+                "Mesut Mustafa",
+                "Konya Teknik Üniversitesi"
+            );
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
-            Sepet sepet = new Sepet();
+            ETicaretFacade facade = new ETicaretFacade();
 
-            sepet.musteriTipi = "VIP";
-            sepet.kurumsalMi = false;
-            sepet.musteriYasi = 22;
-            sepet.kuponKodu = "YAZ2026";
-            sepet.odemeTuru = "CreditCard";
-            sepet.hediyePaketi = true;
-
-            sepet.UrunEkle(
-                UrunFactory.UrunOlustur(
-                    "elektronik",
-                    "RTX 4050 Laptop",
-                    1200,
-                    "USD",
-                    3,
-                    2.5m
-                )
-            );
-
-            sepet.UrunEkle(
-                UrunFactory.UrunOlustur(
-                    "kitap",
-                    "Linux Kitabi",
-                    250,
-                    "TRY",
-                    5,
-                    1
-                )
-            );
-
-            Console.WriteLine("Toplam fiyat: " + Math.Round(sepet.ToplamHesapla(), 2));
+            facade.SiparisOlustur();
         }
     }
 }

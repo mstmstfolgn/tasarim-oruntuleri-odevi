@@ -82,3 +82,5 @@ AI yorumunda ise ekstra olarak “God Method”, “UI ile iþ mantýðýnýn karýþmasý”,
 
 Benim yorum daha doðal ve yorumlama aðýrlýklý durmuþ. AI yorumu daha akademik ve teknik durmuþ.
 Genel olarak benim yorum problem analizi kýsmýnda, AI yorumu ise çözüm ve tasarým örüntüsü kýsmýnda daha güçlü.
+
+
