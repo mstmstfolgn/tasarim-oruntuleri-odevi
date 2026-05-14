@@ -1,3 +1,91 @@
+### 📊 Sistemin Genel Mimari Diyagramı (UML)
+
+```mermaid
+classDiagram
+    class ETicaretFacade {
+        +SiparisTamamla()
+    }
+    class Sepet {
+        -List urunler
+        +UrunEkle(IUrun)
+        +Hesapla(IIndirimStratejisi)
+    }
+    class IUrun {
+        <<interface>>
+        +GetFiyat()
+        +GetAd()
+    }
+    class IIndirimStratejisi {
+        <<interface>>
+        +IndirimUygula(fiyat)
+    }
+    class IBildirimGozlemci {
+        <<interface>>
+        +BilgiVer(mesaj)
+    }
+
+    ETicaretFacade --> Sepet : Yonetir
+    ETicaretFacade --> IBildirimGozlemci : Observer
+    Sepet --> IIndirimStratejisi : Strategy
+    Sepet --> IUrun : Icerir
+    IUrun <|-- UrunDecorator : Decorator
+    IUrun <|-- ElektronikUrun : Factory Method
+```
+
+
+### 1.Creational Pattern: Factory Method (Faz 1)
+Nerede Kullanıldı?
+Projede UrunFactory isminde bir fabrika sınıfı oluşturuldu. Eskiden ürünler Main içinde direkt new Elektronik(), new Kitap() şeklinde oluşturuluyordu. Şimdi ise ürün oluşturma işlemleri UrunFactory üzerinden yapılıyor.
+
+Neden Kullanıldı?
+Eski yapıda yeni bir ürün eklemek istediğimizde ana kodun içine girip değişiklik yapmak gerekiyordu. Bu durum kodun karışmasına ve bağımlılığın artmasına neden oluyordu. Factory Method kullanılarak nesne oluşturma işi tek bir yerde toplandı. Böylece kod daha düzenli ve yönetilebilir hale geldi.
+Ne Kazanıldı? -Kodun okunabilirliği arttı. -Ürün oluşturma işlemleri merkezi hale geldi. -Yeni ürün eklemek kolaylaştı. -Main metodu gereksiz nesne oluşturma yükünden kurtuldu. -OCP prensibine daha uygun bir yapı oluştu.
+
+UML Diyagramı Ne Anlatıyor?
+İlk diyagramda Program sınıfı ürünleri doğrudan kendi oluşturuyor. Yani sistem sıkı bağlı çalışıyor. İkinci diyagramda ise araya UrunFactory giriyor. Böylece Program hangi ürünün nasıl oluşturulduğunu bilmek zorunda kalmıyor. Bu da bağımlılığı azaltıyor ve sistemi daha esnek hale getiriyor.,
+
+```mermaid
+classDiagram
+    class Program {
+        +Main()
+    }
+    class ElektronikUrun {
+        +GetFiyat()
+    }
+    class KitapUrun {
+        +GetFiyat()
+    }
+    
+    note for Program "Sıkı Bağlılık: Her ürün için\ndirekt 'new' kullanılıyor."
+    Program ..> ElektronikUrun : new ElektronikUrun()
+    Program ..> KitapUrun : new KitapUrun()
+```
+## 2. uml
+```mermaid
+classDiagram
+    class Program {
+        +Main()
+    }
+    class UrunFactory {
+        +IUrun CreateUrun(string tip)
+    }
+    class IUrun {
+        <<interface>>
+        +GetFiyat()
+    }
+    class ElektronikUrun {
+        +GetFiyat()
+    }
+    class KitapUrun {
+        +GetFiyat()
+    }
+
+    Program ..> UrunFactory : Ürün İste
+    UrunFactory ..> IUrun : Nesne Üret (Factory Method)
+    IUrun <|-- ElektronikUrun : Uygular (Implements)
+    IUrun <|-- KitapUrun : Uygular (Implements)
+```
+
 ﻿## 2. Structural Patterns (Faz 2)
 
 ### A. Decorator Pattern
@@ -44,48 +132,51 @@ gizlemek ve basitleştirmek için tek bir giriş noktası oluşturduk.
 
 ```mermaid
 classDiagram
-    class Urun {
-        <<abstract>>
-        +VergiHesapla()
+    class ETicaretFacade {
+        -Sepet _sepet
+        -IKargoServisi _kargo
+        +SiparisHazirla()
     }
+
+    class IUrun {
+        <<interface>>
+        +GetFiyat() double
+        +GetAd() string
+    }
+
     class UrunDecorator {
         <<abstract>>
-        #Urun _urun
+        -IUrun _urun
+        +GetFiyat() double
     }
-    class HediyePaketiDecorator
-    class EkstraSigortaDecorator
-    
-    Urun <|-- UrunDecorator
-    Urun <-- UrunDecorator : "sarmalar"
-    UrunDecorator <|-- HediyePaketiDecorator
-    UrunDecorator <|-- EkstraSigortaDecorator
+
+    class HediyePaketiDecorator {
+        +GetFiyat() double
+    }
 
     class IKargoServisi {
         <<interface>>
-        +Deliver()
-    }
-    class ArasKargoAdapter
-    class ArasKargoSistemi {
         +KargoGonder()
     }
-    
-    IKargoServisi <|.. ArasKargoAdapter
-    ArasKargoAdapter --> ArasKargoSistemi : "uyarlar"
 
-    class ETicaretFacade {
-        +SiparisOlustur()
+    class ArasKargoAdapter {
+        -ArasKargoSistemi _disSistem
+        +KargoGonder()
     }
-    class Sepet {
-        +ToplamHesapla()
-    }
+
+    %% İlişkiler
+    ETicaretFacade --> IUrun : Ürünleri Yönetir
+    ETicaretFacade --> IKargoServisi : Kargo Servisini Tetikler
     
-    ETicaretFacade --> Sepet : "yonetir"
-    ETicaretFacade --> IKargoServisi : "kullanir"
-    ETicaretFacade ..> UrunDecorator : "yaratir"
+    IUrun <|-- UrunDecorator : Kalıtım
+    UrunDecorator o-- IUrun : Mevcut Ürünü Sarmalar (Decorator)
+    UrunDecorator <|-- HediyePaketiDecorator : Yeni Özellik Ekler
+    
+    IKargoServisi <|-- ArasKargoAdapter : Arayüzü Uyarlar (Adapter)
 
+```
 
-
-    ---
+﻿
 
 ## 3. Behavioral Patterns (Faz 3)
 
@@ -154,3 +245,4 @@ classDiagram
     ETicaretFacade o-- IBildirimGozlemcisi : "haberdar eder"
     IBildirimGozlemcisi <|.. EmailBildirim
     IBildirimGozlemcisi <|.. SmsBildirim
+```
