@@ -82,3 +82,75 @@ classDiagram
     ETicaretFacade --> Sepet : "yonetir"
     ETicaretFacade --> IKargoServisi : "kullanir"
     ETicaretFacade ..> UrunDecorator : "yaratir"
+
+
+
+    ---
+
+## 3. Behavioral Patterns (Faz 3)
+
+A. Strategy Pattern
+Nerede Kullanıldı?
+`Sepet` sınıfında indirim hesaplamaları için `IIndirimStratejisi` 
+arayüzü ve türevleri (`VipIndirimStratejisi`, `OgrenciIndirimStratejisi` vb.) kullanıldı.
+
+Neden Kullanıldı?
+Önceden indirim mantıkları if-else bloklarıyla `Sepet` sınıfının 
+içine gömülüydü. Yeni bir indirim eklemek kodun bozulmasına ve OCP'nin ihlaline yol açardı. 
+İndirim algoritmalarını sınıflara bölerek bu karmaşayı temizledik.
+
+Ne Kazanıldı?
+OCP (Açık/Kapalı Prensibi) %100 sağlandı. Yeni bir indirim türü 
+(Örn: Efsane Cuma) eklemek için mevcut koda hiç dokunmadan sadece yeni bir 
+strateji sınıfı oluşturmamız yeterli olacak.
+
+B. Observer Pattern
+Nerede Kullanıldı?
+`ETicaretFacade` sınıfında sipariş bitiminde müşteriye bildirim 
+göndermek için `IBildirimGozlemcisi` arayüzü ile kullanıldı.
+
+Neden Kullanıldı?
+Sipariş tamamlanınca Email ve SMS servislerini koda sıkı sıkıya 
+bağlamak (tight coupling) yerine, esnek bir "yayıncı-abone" (publisher/subscriber) 
+sistemi kurmak istedik.
+
+Ne Kazanıldı?
+Sisteme yeni bir bildirim yöntemi (Örn: WhatsApp bildirimi) 
+eklemek istediğimizde sipariş veya sepet kodunu değiştirmemize gerek kalmadı. 
+Sadece yeni bir gözlemci ekleyip sisteme abone ediyoruz.
+
+---
+
+```mermaid
+classDiagram
+    class Sepet {
+        -IIndirimStratejisi _indirimStratejisi
+        +ToplamHesapla()
+        +IndirimStratejisiBelirle()
+    }
+    class IIndirimStratejisi {
+        <<interface>>
+        +IndirimUygula()
+    }
+    class VipIndirimStratejisi
+    class OgrenciIndirimStratejisi
+    
+    Sepet o-- IIndirimStratejisi : "kullanir"
+    IIndirimStratejisi <|.. VipIndirimStratejisi
+    IIndirimStratejisi <|.. OgrenciIndirimStratejisi
+
+    class ETicaretFacade {
+        -List~IBildirimGozlemcisi~ _gozlemciler
+        +SiparisOlustur()
+        +GozlemciEkle()
+    }
+    class IBildirimGozlemcisi {
+        <<interface>>
+        +BildirimAl()
+    }
+    class EmailBildirim
+    class SmsBildirim
+    
+    ETicaretFacade o-- IBildirimGozlemcisi : "haberdar eder"
+    IBildirimGozlemcisi <|.. EmailBildirim
+    IBildirimGozlemcisi <|.. SmsBildirim
